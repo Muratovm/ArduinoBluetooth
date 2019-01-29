@@ -73,17 +73,18 @@ public class MainActivity extends Activity implements RadioGroup.OnCheckedChange
     TextView mRemoteRssiVal;
     RadioGroup mRg;
     private int mState = UART_PROFILE_DISCONNECTED;
-    private UartService mService = null;
     private BluetoothDevice mDevice = null;
     private BluetoothAdapter mBtAdapter = null;
     private ListView messageListView;
     private ArrayAdapter<String> listAdapter;
     private Button btnConnectDisconnect,btnSend;
     private EditText edtMessage;
+    private Activity activity;
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
+        activity = this;
         askForLocation();
         mBtAdapter = BluetoothAdapter.getDefaultAdapter();
         if (mBtAdapter == null) {
@@ -122,8 +123,8 @@ public class MainActivity extends Activity implements RadioGroup.OnCheckedChange
         				//Disconnect button pressed
         				if (mDevice!=null)
         				{
-        					mService.disconnect();
-        					
+        					GlobalService.mService.disconnect();
+
         				}
         			}
                 }
@@ -139,7 +140,7 @@ public class MainActivity extends Activity implements RadioGroup.OnCheckedChange
 				try {
 					//send data to service
 					value = message.getBytes("UTF-8");
-					mService.writeRXCharacteristic(value);
+					GlobalService.mService.writeRXCharacteristic(value);
 					//Update the log with time stamp
 					String currentDateTimeString = DateFormat.getTimeInstance().format(new Date());
 					listAdapter.add("["+currentDateTimeString+"] TX: "+ message);
@@ -149,20 +150,20 @@ public class MainActivity extends Activity implements RadioGroup.OnCheckedChange
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
-                
+
             }
         });
-     
+
         // Set initial UI state
-        
+
     }
-    
+
     //UART service connected/disconnected
     private ServiceConnection mServiceConnection = new ServiceConnection() {
         public void onServiceConnected(ComponentName className, IBinder rawBinder) {
-        		mService = ((UartService.LocalBinder) rawBinder).getService();
-        		Log.d(TAG, "onServiceConnected mService= " + mService);
-        		if (!mService.initialize()) {
+                GlobalService.mService = ((UartService.LocalBinder) rawBinder).getService();
+        		Log.d(TAG, "onServiceConnected mService= " + GlobalService.mService);
+        		if (!GlobalService.mService.initialize()) {
                     Log.e(TAG, "Unable to initialize Bluetooth");
                     finish();
                 }
@@ -171,23 +172,23 @@ public class MainActivity extends Activity implements RadioGroup.OnCheckedChange
 
         public void onServiceDisconnected(ComponentName classname) {
        ////     mService.disconnect(mDevice);
-        		mService = null;
+        		GlobalService.mService = null;
         }
     };
 
     private Handler mHandler = new Handler() {
         @Override
-        
-        //Handler events that received from UART service 
+
+        //Handler events that received from UART service
         public void handleMessage(Message msg) {
-  
+
         }
     };
 
     private final BroadcastReceiver UARTStatusChangeReceiver = new BroadcastReceiver() {
 
         public void onReceive(Context context, Intent intent) {
-            String action = intent.getAction();
+            final String action = intent.getAction();
 
             final Intent mIntent = intent;
            //*********************//
@@ -201,12 +202,15 @@ public class MainActivity extends Activity implements RadioGroup.OnCheckedChange
                              btnSend.setEnabled(true);
                              ((TextView) findViewById(R.id.deviceName)).setText(mDevice.getName()+ " - ready");
                              listAdapter.add("["+currentDateTimeString+"] Connected to: "+ mDevice.getName());
-                        	 	messageListView.smoothScrollToPosition(listAdapter.getCount() - 1);
+                             messageListView.smoothScrollToPosition(listAdapter.getCount() - 1);
                              mState = UART_PROFILE_CONNECTED;
+
+                            Intent intent = new Intent(activity, JoystickActivity.class);
+                            startActivity(intent);
                      }
             	 });
             }
-           
+
           //*********************//
             if (action.equals(UartService.ACTION_GATT_DISCONNECTED)) {
             	 runOnUiThread(new Runnable() {
@@ -219,21 +223,21 @@ public class MainActivity extends Activity implements RadioGroup.OnCheckedChange
                              ((TextView) findViewById(R.id.deviceName)).setText("Not Connected");
                              listAdapter.add("["+currentDateTimeString+"] Disconnected to: "+ mDevice.getName());
                              mState = UART_PROFILE_DISCONNECTED;
-                             mService.close();
+                            GlobalService.mService.close();
                             //setUiState();
-                         
+
                      }
                  });
             }
-            
-          
+
+
           //*********************//
             if (action.equals(UartService.ACTION_GATT_SERVICES_DISCOVERED)) {
-             	 mService.enableTXNotification();
+                GlobalService.mService.enableTXNotification();
             }
           //*********************//
             if (action.equals(UartService.ACTION_DATA_AVAILABLE)) {
-              
+
                  final byte[] txValue = intent.getByteArrayExtra(UartService.EXTRA_DATA);
                  runOnUiThread(new Runnable() {
                      public void run() {
@@ -242,7 +246,7 @@ public class MainActivity extends Activity implements RadioGroup.OnCheckedChange
                          	String currentDateTimeString = DateFormat.getTimeInstance().format(new Date());
                         	 	listAdapter.add("["+currentDateTimeString+"] RX: "+text);
                         	 	messageListView.smoothScrollToPosition(listAdapter.getCount() - 1);
-                        	
+
                          } catch (Exception e) {
                              Log.e(TAG, e.toString());
                          }
@@ -252,17 +256,17 @@ public class MainActivity extends Activity implements RadioGroup.OnCheckedChange
            //*********************//
             if (action.equals(UartService.DEVICE_DOES_NOT_SUPPORT_UART)){
             	showMessage("Device doesn't support UART. Disconnecting");
-            	mService.disconnect();
+                GlobalService.mService.disconnect();
             }
-            
-            
+
+
         }
     };
 
     private void service_init() {
         Intent bindIntent = new Intent(this, UartService.class);
         bindService(bindIntent, mServiceConnection, Context.BIND_AUTO_CREATE);
-  
+
         LocalBroadcastManager.getInstance(this).registerReceiver(UARTStatusChangeReceiver, makeGattUpdateIntentFilter());
     }
     private static IntentFilter makeGattUpdateIntentFilter() {
@@ -283,16 +287,16 @@ public class MainActivity extends Activity implements RadioGroup.OnCheckedChange
     public void onDestroy() {
     	 super.onDestroy();
         Log.d(TAG, "onDestroy()");
-        
+
         try {
         	LocalBroadcastManager.getInstance(this).unregisterReceiver(UARTStatusChangeReceiver);
         } catch (Exception ignore) {
             Log.e(TAG, ignore.toString());
-        } 
+        }
         unbindService(mServiceConnection);
-        mService.stopSelf();
-        mService= null;
-       
+        GlobalService.mService.stopSelf();
+        GlobalService.mService= null;
+
     }
 
     @Override
@@ -322,7 +326,7 @@ public class MainActivity extends Activity implements RadioGroup.OnCheckedChange
             Intent enableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
             startActivityForResult(enableIntent, REQUEST_ENABLE_BT);
         }
- 
+
     }
 
     @Override
@@ -339,10 +343,10 @@ public class MainActivity extends Activity implements RadioGroup.OnCheckedChange
             if (resultCode == Activity.RESULT_OK && data != null) {
                 String deviceAddress = data.getStringExtra(BluetoothDevice.EXTRA_DEVICE);
                 mDevice = BluetoothAdapter.getDefaultAdapter().getRemoteDevice(deviceAddress);
-               
-                Log.d(TAG, "... onActivityResultdevice.address==" + mDevice + "mserviceValue" + mService);
+
+                Log.d(TAG, "... onActivityResultdevice.address==" + mDevice + "mserviceValue" + GlobalService.mService);
                 ((TextView) findViewById(R.id.deviceName)).setText(mDevice.getName()+ " - connecting");
-                mService.connect(deviceAddress);
+                GlobalService.mService.connect(deviceAddress);
                             
 
             }
@@ -367,7 +371,7 @@ public class MainActivity extends Activity implements RadioGroup.OnCheckedChange
 
     @Override
     public void onCheckedChanged(RadioGroup group, int checkedId) {
-       
+
     }
 
     

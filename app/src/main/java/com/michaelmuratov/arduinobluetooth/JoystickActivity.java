@@ -70,6 +70,7 @@ public class JoystickActivity extends AppCompatActivity {
                 view.setCentreCircle(circle.getX()+ circle.getWidth() / 2,
                         circle.getY()+ circle.getHeight() / 2);
                 if(event.getAction() == MotionEvent.ACTION_UP){
+                    sendCommand("X\0");
                     cursorX = circle.getX() + circle.getWidth() / 2 - control.getWidth() / 2;
                     cursorY = circle.getY() + circle.getHeight() / 2 - control.getHeight() / 2;
                     down = false;
@@ -80,10 +81,6 @@ public class JoystickActivity extends AppCompatActivity {
                 }
 
                 else if(event.getAction() == MotionEvent.ACTION_DOWN){
-                    if(!sent){
-                        sendCommand("a");
-                        sent = true;
-                    }
                     down = true;
                     cursorX = event.getX() + circle.getX();
                     cursorY = event.getY() + circle.getY();
@@ -107,15 +104,12 @@ public class JoystickActivity extends AppCompatActivity {
                 }
 
                 else if(event.getAction() == MotionEvent.ACTION_MOVE){
-                    if(event.getY() < 400) {
-                        //increase speed
-                        sendCommand("b");
-                    }
-                    else{
-                        //decrease
-                        sendCommand("c");
-                    }
-                    Log.d("Y",""+event.getY());
+                    int speedy = (425 - (int)event.getY()) * 200/425;
+                    int speedx = (425 - (int)event.getX()) * 200/425;
+                    sendCommand("F"+speedy+"\0");
+                    sendCommand("S"+speedx+"\0");
+                    Log.d("Y",""+speedy);
+                    Log.d("X",""+speedx);
                     float x = event.getX()-circle.getWidth()/2;
                     float y = event.getY()-circle.getHeight()/2;
                     double distance = Math.sqrt(Math.pow(x,2)+ (float) Math.pow(y,2));

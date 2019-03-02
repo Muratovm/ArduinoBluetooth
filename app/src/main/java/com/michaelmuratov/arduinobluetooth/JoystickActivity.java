@@ -1,7 +1,7 @@
 package com.michaelmuratov.arduinobluetooth;
 
 import android.annotation.SuppressLint;
-import android.media.MediaPlayer;
+import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.RequiresApi;
@@ -12,8 +12,6 @@ import android.view.View;
 import android.widget.ImageView;
 
 import java.io.UnsupportedEncodingException;
-import java.text.DateFormat;
-import java.util.Date;
 
 public class JoystickActivity extends AppCompatActivity {
 
@@ -49,11 +47,8 @@ public class JoystickActivity extends AppCompatActivity {
         final ImageView circle = findViewById(R.id.circle);
         final ImageView control = findViewById(R.id.control);
 
-//        control.setX(circle.getX() + circle.getWidth() / 2 - control.getWidth() / 2);
-//        control.setY(circle.getY() + circle.getHeight() / 2 - control.getHeight() / 2);
-
-        centreX = circle.getX() + circle.getWidth() / 2 - control.getWidth() / 2;
-        centreY = circle.getY() + circle.getHeight() / 2 - control.getHeight() / 2;
+        centreX = circle.getX() + (circle.getWidth() >> 1) - (control.getWidth() >> 1);
+        centreY = circle.getY() + (circle.getHeight() >> 1) - (control.getHeight() >> 1);
 
 
         circle.setOnClickListener(new View.OnClickListener() {
@@ -67,12 +62,12 @@ public class JoystickActivity extends AppCompatActivity {
 
             @Override
             public boolean onTouch(View v, final MotionEvent event){
-                view.setCentreCircle(circle.getX()+ circle.getWidth() / 2,
-                        circle.getY()+ circle.getHeight() / 2);
+                view.setCentreCircle(circle.getX()+ (circle.getWidth() >> 1),
+                        circle.getY()+ (circle.getHeight() >> 1));
                 if(event.getAction() == MotionEvent.ACTION_UP){
                     sendCommand("X\0");
-                    cursorX = circle.getX() + circle.getWidth() / 2 - control.getWidth() / 2;
-                    cursorY = circle.getY() + circle.getHeight() / 2 - control.getHeight() / 2;
+                    cursorX = circle.getX() + (circle.getWidth() >> 1) - (control.getWidth() >> 1);
+                    cursorY = circle.getY() + (circle.getHeight() >> 1) - (control.getHeight() >> 1);
                     down = false;
                     view.setCentreCircle(0,0);
                     view.setCentreControl(0,0);
@@ -110,39 +105,37 @@ public class JoystickActivity extends AppCompatActivity {
                     sendCommand("S"+speedx+"\0");
                     Log.d("Y",""+speedy);
                     Log.d("X",""+speedx);
-                    float x = event.getX()-circle.getWidth()/2;
-                    float y = event.getY()-circle.getHeight()/2;
+                    float x = event.getX()- (circle.getWidth() >> 1);
+                    float y = event.getY()- (circle.getHeight() >> 1);
                     double distance = Math.sqrt(Math.pow(x,2)+ (float) Math.pow(y,2));
                     //Log.d("Distance",""+distance);
                     if (distance > circle.getWidth()/2){
                         double angle  = Math.atan2(x,y);
                         cursorX = (float) ((circle.getWidth()/2)*Math.sin(angle));
                         cursorY = (float) ((circle.getHeight()/2)*Math.cos(angle));
-                        cursorX+=circle.getX()+circle.getWidth()/2-control.getWidth()/2;
-                        cursorY+=circle.getY()+circle.getHeight()/2-control.getHeight()/2;
+                        cursorX+=circle.getX() + (circle.getWidth() >> 1) - (control.getWidth() >> 1);
+                        cursorY+=circle.getY() + (circle.getHeight() >> 1) - (control.getHeight() >> 1);
                     }
                     else{
-                        cursorX = x+circle.getX()+circle.getWidth()/2-control.getWidth()/2;
-                        cursorY = y+circle.getY()+circle.getHeight()/2-control.getHeight()/2;
+                        cursorX = x+circle.getX() + (circle.getWidth() >> 1) - (control.getWidth() >> 1);
+                        cursorY = y+circle.getY() + (circle.getHeight() >> 1) - (control.getHeight() >> 1);
                     }
                     control.setX(cursorX);
                     control.setY(cursorY);
 
-                    hDifference = control.getX() - circle.getX() - circle.getWidth() / 2;
+                    hDifference = control.getX() - circle.getX() - (circle.getWidth() >> 1);
                     if (hDifference > 0)
-                        hDifference = control.getX() + control.getWidth() - circle.getX() - circle.getWidth() / 2;
+                        hDifference = control.getX() + control.getWidth() - circle.getX() - (circle.getWidth() >> 1);
 
-                    vDifference = control.getY() - circle.getY() - circle.getHeight() / 2;
+                    vDifference = control.getY() - circle.getY() - (circle.getHeight() >> 1);
                     if (vDifference > 0)
-                        vDifference = control.getY() + control.getHeight() - circle.getY() - circle.getHeight() / 2;
+                        vDifference = control.getY() + control.getHeight() - circle.getY() - (circle.getHeight() >> 1);
 
-                    view.setCentreControl(  cursorX+control.getWidth()/2,
-                            cursorY+control.getHeight()/2);
+                    view.setCentreControl(  cursorX+ (control.getWidth() >> 1),
+                            cursorY+ (control.getHeight() >> 1));
                     view.setTouchCoordinates(event.getRawX(),
                             event.getRawY()-control.getHeight());
                     view.updateOverlay();
-                    //Log.d("LOC START","X: "+cursorX+",Y: "+cursorY);
-                    //Log.d("LOC END","X: "+event.getRawX()+",Y: "+event.getRawY());
                 }
                 return false;
             }
@@ -159,5 +152,12 @@ public class JoystickActivity extends AppCompatActivity {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
+    }
+
+    @Override
+    public void onBackPressed() {
+        Intent intent = new Intent(this, MainActivity.class);
+        startActivity(intent);
+        finish();
     }
 }

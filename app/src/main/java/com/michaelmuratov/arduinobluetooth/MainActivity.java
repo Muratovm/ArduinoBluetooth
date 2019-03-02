@@ -1,161 +1,86 @@
-
-/*
- * Copyright (c) 2015, Nordic Semiconductor
- * All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
- *
- * 1. Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
- *
- * 2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the
- * documentation and/or other materials provided with the distribution.
- *
- * 3. Neither the name of the copyright holder nor the names of its contributors may be used to endorse or promote products derived from this
- * software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
- * HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
- * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
- * ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
- * USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
-
 package com.michaelmuratov.arduinobluetooth;
 
-
-import android.Manifest;
-import android.annotation.TargetApi;
 import android.app.Activity;
-import android.app.AlertDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
-import android.content.pm.PackageManager;
 import android.content.res.Configuration;
-import android.os.Build;
 import android.os.Bundle;
-import android.os.Handler;
 import android.os.IBinder;
-import android.os.Message;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.EditText;
-import android.widget.ListView;
-import android.widget.RadioGroup;
-import android.widget.TextView;
 import android.widget.Toast;
 
-import java.io.UnsupportedEncodingException;
 import java.text.DateFormat;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 
-public class MainActivity extends Activity implements RadioGroup.OnCheckedChangeListener {
+public class MainActivity extends Activity{
+
+    public static final String TAG = "nRFUART";
+
     private static final int REQUEST_SELECT_DEVICE = 1;
     private static final int REQUEST_ENABLE_BT = 2;
-    private static final int UART_PROFILE_READY = 10;
-    public static final String TAG = "nRFUART";
+
     private static final int UART_PROFILE_CONNECTED = 20;
     private static final int UART_PROFILE_DISCONNECTED = 21;
-    private static final int STATE_OFF = 10;
-
-    TextView mRemoteRssiVal;
-    RadioGroup mRg;
     private int mState = UART_PROFILE_DISCONNECTED;
+
+
     private BluetoothDevice mDevice = null;
     private BluetoothAdapter mBtAdapter = null;
-    private ListView messageListView;
-    private ArrayAdapter<String> listAdapter;
-    private Button btnConnectDisconnect,btnSend;
-    private EditText edtMessage;
+    private Button btnConnectDisconnect;
     private Activity activity;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
         activity = this;
-        askForLocation();
+
+        Permissions permissions = new Permissions(this);
+        permissions.askForLocation();
+
         mBtAdapter = BluetoothAdapter.getDefaultAdapter();
         if (mBtAdapter == null) {
             Toast.makeText(this, "Bluetooth is not available", Toast.LENGTH_LONG).show();
             finish();
             return;
         }
-        messageListView = (ListView) findViewById(R.id.listMessage);
-        listAdapter = new ArrayAdapter<String>(this, R.layout.message_detail);
-        messageListView.setAdapter(listAdapter);
-        messageListView.setDivider(null);
-        btnConnectDisconnect=(Button) findViewById(R.id.btn_select);
-        btnSend=(Button) findViewById(R.id.sendButton);
-        edtMessage = (EditText) findViewById(R.id.sendText);
+        btnConnectDisconnect= findViewById(R.id.btn_select);
         service_init();
 
-     
-       
         // Handle Disconnect & Connect button
         btnConnectDisconnect.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (!mBtAdapter.isEnabled()) {
-                    Log.i(TAG, "onClick - BT not enabled yet");
-                    Intent enableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-                    startActivityForResult(enableIntent, REQUEST_ENABLE_BT);
-                }
-                else {
-                	if (btnConnectDisconnect.getText().equals("Connect")){
-                		
-                		//Connect button pressed, open DeviceListActivity class, with popup windows that scan for devices
-                		
-            			Intent newIntent = new Intent(MainActivity.this, DeviceListActivity.class);
-            			startActivityForResult(newIntent, REQUEST_SELECT_DEVICE);
-        			} else {
-        				//Disconnect button pressed
-        				if (mDevice!=null)
-        				{
-        					GlobalService.mService.disconnect();
-
-        				}
-        			}
+            if (!mBtAdapter.isEnabled()) {
+                Log.i(TAG, "onClick - BT not enabled yet");
+                Intent enableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+                startActivityForResult(enableIntent, REQUEST_ENABLE_BT);
+            }
+            else {
+                if (btnConnectDisconnect.getText().equals("Connect")){
+                    //Connect button pressed, open DeviceListActivity class, with popup windows that scan for devices
+                    Intent newIntent = new Intent(MainActivity.this, DeviceListActivity.class);
+                    startActivityForResult(newIntent, REQUEST_SELECT_DEVICE);
+                } else {
+                    //Disconnect button pressed
+                    if (mDevice!=null){
+                        GlobalService.mService.disconnect();
+                    }
                 }
             }
-        });
-        // Handle Send button
-        btnSend.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-            	EditText editText = (EditText) findViewById(R.id.sendText);
-            	String message = editText.getText().toString();
-            	byte[] value;
-				try {
-					//send data to service
-					value = message.getBytes("UTF-8");
-					GlobalService.mService.writeRXCharacteristic(value);
-					//Update the log with time stamp
-					String currentDateTimeString = DateFormat.getTimeInstance().format(new Date());
-					listAdapter.add("["+currentDateTimeString+"] TX: "+ message);
-               	 	messageListView.smoothScrollToPosition(listAdapter.getCount() - 1);
-               	 	edtMessage.setText("");
-				} catch (UnsupportedEncodingException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-
             }
         });
-
         // Set initial UI state
-
     }
 
     //UART service connected/disconnected
@@ -171,40 +96,24 @@ public class MainActivity extends Activity implements RadioGroup.OnCheckedChange
         }
 
         public void onServiceDisconnected(ComponentName classname) {
-       ////     mService.disconnect(mDevice);
+                ////mService.disconnect(mDevice);
         		GlobalService.mService = null;
         }
     };
 
-    private Handler mHandler = new Handler() {
-        @Override
-
-        //Handler events that received from UART service
-        public void handleMessage(Message msg) {
-
-        }
-    };
-
     private final BroadcastReceiver UARTStatusChangeReceiver = new BroadcastReceiver() {
-
         public void onReceive(Context context, Intent intent) {
             final String action = intent.getAction();
 
-            final Intent mIntent = intent;
            //*********************//
+            assert action != null;
             if (action.equals(UartService.ACTION_GATT_CONNECTED)) {
             	 runOnUiThread(new Runnable() {
                      public void run() {
                          	String currentDateTimeString = DateFormat.getTimeInstance().format(new Date());
                              Log.d(TAG, "UART_CONNECT_MSG");
                              btnConnectDisconnect.setText("Disconnect");
-                             edtMessage.setEnabled(true);
-                             btnSend.setEnabled(true);
-                             ((TextView) findViewById(R.id.deviceName)).setText(mDevice.getName()+ " - ready");
-                             listAdapter.add("["+currentDateTimeString+"] Connected to: "+ mDevice.getName());
-                             messageListView.smoothScrollToPosition(listAdapter.getCount() - 1);
                              mState = UART_PROFILE_CONNECTED;
-
                             Intent intent = new Intent(activity, JoystickActivity.class);
                             startActivity(intent);
                      }
@@ -218,14 +127,8 @@ public class MainActivity extends Activity implements RadioGroup.OnCheckedChange
                     	 	 String currentDateTimeString = DateFormat.getTimeInstance().format(new Date());
                              Log.d(TAG, "UART_DISCONNECT_MSG");
                              btnConnectDisconnect.setText("Connect");
-                             edtMessage.setEnabled(false);
-                             btnSend.setEnabled(false);
-                             ((TextView) findViewById(R.id.deviceName)).setText("Not Connected");
-                             listAdapter.add("["+currentDateTimeString+"] Disconnected to: "+ mDevice.getName());
                              mState = UART_PROFILE_DISCONNECTED;
                             GlobalService.mService.close();
-                            //setUiState();
-
                      }
                  });
             }
@@ -244,9 +147,6 @@ public class MainActivity extends Activity implements RadioGroup.OnCheckedChange
                          try {
                          	String text = new String(txValue, "UTF-8");
                          	String currentDateTimeString = DateFormat.getTimeInstance().format(new Date());
-                        	 	listAdapter.add("["+currentDateTimeString+"] RX: "+text);
-                        	 	messageListView.smoothScrollToPosition(listAdapter.getCount() - 1);
-
                          } catch (Exception e) {
                              Log.e(TAG, e.toString());
                          }
@@ -255,11 +155,8 @@ public class MainActivity extends Activity implements RadioGroup.OnCheckedChange
              }
            //*********************//
             if (action.equals(UartService.DEVICE_DOES_NOT_SUPPORT_UART)){
-            	showMessage("Device doesn't support UART. Disconnecting");
                 GlobalService.mService.disconnect();
             }
-
-
         }
     };
 
@@ -290,8 +187,8 @@ public class MainActivity extends Activity implements RadioGroup.OnCheckedChange
 
         try {
         	LocalBroadcastManager.getInstance(this).unregisterReceiver(UARTStatusChangeReceiver);
-        } catch (Exception ignore) {
-            Log.e(TAG, ignore.toString());
+        } catch (Exception e) {
+            Log.e(TAG, e.toString());
         }
         unbindService(mServiceConnection);
         GlobalService.mService.stopSelf();
@@ -325,6 +222,7 @@ public class MainActivity extends Activity implements RadioGroup.OnCheckedChange
             Log.i(TAG, "onResume - BT not enabled yet");
             Intent enableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
             startActivityForResult(enableIntent, REQUEST_ENABLE_BT);
+            finish();
         }
 
     }
@@ -337,7 +235,6 @@ public class MainActivity extends Activity implements RadioGroup.OnCheckedChange
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         switch (requestCode) {
-
         case REQUEST_SELECT_DEVICE:
         	//When the DeviceListActivity return, with the selected device address
             if (resultCode == Activity.RESULT_OK && data != null) {
@@ -345,7 +242,6 @@ public class MainActivity extends Activity implements RadioGroup.OnCheckedChange
                 mDevice = BluetoothAdapter.getDefaultAdapter().getRemoteDevice(deviceAddress);
 
                 Log.d(TAG, "... onActivityResultdevice.address==" + mDevice + "mserviceValue" + GlobalService.mService);
-                ((TextView) findViewById(R.id.deviceName)).setText(mDevice.getName()+ " - connecting");
                 GlobalService.mService.connect(deviceAddress);
                             
 
@@ -370,97 +266,12 @@ public class MainActivity extends Activity implements RadioGroup.OnCheckedChange
     }
 
     @Override
-    public void onCheckedChanged(RadioGroup group, int checkedId) {
-
-    }
-
-    
-    private void showMessage(String msg) {
-        Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
-  
-    }
-
-    @Override
     public void onBackPressed() {
         if (mState == UART_PROFILE_CONNECTED) {
             Intent startMain = new Intent(Intent.ACTION_MAIN);
             startMain.addCategory(Intent.CATEGORY_HOME);
             startMain.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             startActivity(startMain);
-            showMessage("nRFUART's running in background.\n             Disconnect to exit");
         }
-        else {
-            new AlertDialog.Builder(this)
-            .setIcon(android.R.drawable.ic_dialog_alert)
-            .setTitle(R.string.popup_title)
-            .setMessage(R.string.popup_message)
-            .setPositiveButton(R.string.popup_yes, new DialogInterface.OnClickListener()
-                {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-   	                finish();
-                }
-            })
-            .setNegativeButton(R.string.popup_no, null)
-            .show();
-        }
-    }
-
-    @TargetApi(Build.VERSION_CODES.M)
-    private void askForLocation() {
-        List<String> permissionsNeeded = new ArrayList<String>();
-
-        final List<String> permissionsList = new ArrayList<String>();
-        if (!addPermission(permissionsList, Manifest.permission.ACCESS_FINE_LOCATION))
-            permissionsNeeded.add("Show Location");
-
-        if (permissionsList.size() > 0) {
-            if (permissionsNeeded.size() > 0) {
-
-                // Need Rationale
-                String message = "App need access to " + permissionsNeeded.get(0);
-
-                for (int i = 1; i < permissionsNeeded.size(); i++)
-                    message = message + ", " + permissionsNeeded.get(i);
-
-                showMessageOKCancel(message,
-                        new DialogInterface.OnClickListener() {
-
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                requestPermissions(permissionsList.toArray(new String[permissionsList.size()]),
-                                        7);
-                            }
-                        });
-                return;
-            }
-            requestPermissions(permissionsList.toArray(new String[permissionsList.size()]),
-                    7);
-            return;
-        }
-
-        Toast.makeText(this, "No new Permission Required- Launching App .You are Awesome!!", Toast.LENGTH_SHORT)
-                .show();
-    }
-
-    private void showMessageOKCancel(String message, DialogInterface.OnClickListener okListener) {
-        new AlertDialog.Builder(this)
-                .setMessage(message)
-                .setPositiveButton("OK", okListener)
-                .setNegativeButton("Cancel", null)
-                .create()
-                .show();
-    }
-
-    @TargetApi(Build.VERSION_CODES.M)
-    private boolean addPermission(List<String> permissionsList, String permission) {
-
-        if (checkSelfPermission(permission) != PackageManager.PERMISSION_GRANTED) {
-            permissionsList.add(permission);
-            // Check for Rationale Option
-            if (!shouldShowRequestPermissionRationale(permission))
-                return false;
-        }
-        return true;
     }
 }

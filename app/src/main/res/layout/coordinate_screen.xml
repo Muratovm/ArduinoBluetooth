@@ -6,11 +6,11 @@
     <include layout="@layout/joystick_screen"
         android:layout_width="match_parent" android:layout_height="match_parent"/>
 
-    <com.michaelmuratov.arduinobluetooth.Coordinate_View
+    <com.michaelmuratov.arduinobluetooth.Controller.Coordinate_View
         android:layout_height="match_parent"
         android:layout_width="match_parent"
         android:id="@+id/drawing_screen">
 
-    </com.michaelmuratov.arduinobluetooth.Coordinate_View>
+    </com.michaelmuratov.arduinobluetooth.Controller.Coordinate_View>
 
 </FrameLayout>

@@ -1,4 +1,4 @@
-package com.michaelmuratov.arduinobluetooth;
+package com.michaelmuratov.arduinobluetooth.Controller;
 
 import android.annotation.SuppressLint;
 import android.content.Intent;
@@ -11,13 +11,13 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ImageView;
 
-import java.io.UnsupportedEncodingException;
+import com.michaelmuratov.arduinobluetooth.MainActivity;
+import com.michaelmuratov.arduinobluetooth.R;
+import com.michaelmuratov.arduinobluetooth.UART.UARTListener;
 
 public class JoystickActivity extends AppCompatActivity {
-
     public final int movingSpeed = 5;
     boolean down = true;
-    boolean sent = false;
     float cursorX;
     float cursorY;
 
@@ -30,14 +30,22 @@ public class JoystickActivity extends AppCompatActivity {
     float hDifference;
     float vDifference;
 
+    UARTListener uartListener;
+
     @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR2)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.coordinate_screen);
 
+        Intent intent = getIntent();
+        String deviceAddress = intent.getStringExtra("device address");
         addJoystick();
-        //view = new Coordinate_View(this);
+        Log.d("ADDRESS",deviceAddress);
+        uartListener = new UARTListener(this);
+        uartListener.service_init(deviceAddress);
+
+
 
     }
 
@@ -65,7 +73,7 @@ public class JoystickActivity extends AppCompatActivity {
                 view.setCentreCircle(circle.getX()+ (circle.getWidth() >> 1),
                         circle.getY()+ (circle.getHeight() >> 1));
                 if(event.getAction() == MotionEvent.ACTION_UP){
-                    sendCommand("X\0");
+                    uartListener.sendCommand("X\0");
                     cursorX = circle.getX() + (circle.getWidth() >> 1) - (control.getWidth() >> 1);
                     cursorY = circle.getY() + (circle.getHeight() >> 1) - (control.getHeight() >> 1);
                     down = false;
@@ -101,8 +109,8 @@ public class JoystickActivity extends AppCompatActivity {
                 else if(event.getAction() == MotionEvent.ACTION_MOVE){
                     int speedy = (425 - (int)event.getY()) * 200/425;
                     int speedx = (425 - (int)event.getX()) * 200/425;
-                    sendCommand("F"+speedy+"\0");
-                    sendCommand("S"+speedx+"\0");
+                    uartListener.sendCommand("F"+speedy+"\0");
+                    uartListener.sendCommand("S"+speedx+"\0");
                     Log.d("Y",""+speedy);
                     Log.d("X",""+speedx);
                     float x = event.getX()- (circle.getWidth() >> 1);
@@ -142,22 +150,18 @@ public class JoystickActivity extends AppCompatActivity {
         });
     }
 
-    public void sendCommand(String message){
-        byte[] value;
-        try {
-            //send data to service
-            value = message.getBytes("UTF-8");
-            GlobalService.mService.writeRXCharacteristic(value);
-        } catch (UnsupportedEncodingException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
+    @Override
+    public void onDestroy(){
+        super.onDestroy();
+        uartListener.service_terminate();
     }
 
+
     @Override
-    public void onBackPressed() {
+    public void onBackPressed(){
         Intent intent = new Intent(this, MainActivity.class);
         startActivity(intent);
         finish();
     }
+
 }

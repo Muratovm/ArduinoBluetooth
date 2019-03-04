@@ -20,7 +20,7 @@
  * ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
  * USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package com.michaelmuratov.arduinobluetooth;
+package com.michaelmuratov.arduinobluetooth.UART;
 
 import android.app.Service;
 import android.bluetooth.BluetoothAdapter;
@@ -147,13 +147,11 @@ public class UartService extends Service {
         	
            // Log.d(TAG, String.format("Received TX: %d",characteristic.getValue() ));
             intent.putExtra(EXTRA_DATA, characteristic.getValue());
-        } else {
-        	
         }
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
     }
 
-    public class LocalBinder extends Binder {
+    class LocalBinder extends Binder {
         UartService getService() {
             return UartService.this;
         }
@@ -217,9 +215,11 @@ public class UartService extends Service {
         }
 
         // Previously connected device.  Try to reconnect.
-        if (mBluetoothDeviceAddress != null && address.equals(mBluetoothDeviceAddress)
+
+        if (address.equals(mBluetoothDeviceAddress)
                 && mBluetoothGatt != null) {
             Log.d(TAG, "Trying to use an existing mBluetoothGatt for connection.");
+
             if (mBluetoothGatt.connect()) {
                 mConnectionState = STATE_CONNECTING;
                 return true;
@@ -227,6 +227,7 @@ public class UartService extends Service {
                 return false;
             }
         }
+
 
         final BluetoothDevice device = mBluetoothAdapter.getRemoteDevice(address);
         if (device == null) {
@@ -254,7 +255,7 @@ public class UartService extends Service {
             return;
         }
         mBluetoothGatt.disconnect();
-       // mBluetoothGatt.close();
+        mBluetoothGatt.close();
     }
 
     /**
@@ -287,15 +288,7 @@ public class UartService extends Service {
     }
 
     /**
-     * Enables or disables notification on a give characteristic.
-     *
-
-    */
-    
-    /**
      * Enable Notification on TX characteristic
-     *
-     * @return 
      */
     public void enableTXNotification()
     { 
@@ -328,7 +321,7 @@ public class UartService extends Service {
     
     public void writeRXCharacteristic(byte[] value) {
     	BluetoothGattService RxService = mBluetoothGatt.getService(RX_SERVICE_UUID);
-    	showMessage("mBluetoothGatt null"+ mBluetoothGatt);
+    	//showMessage("mBluetoothGatt null"+ mBluetoothGatt);
     	if (RxService == null) {
             showMessage("Rx service not found!");
             broadcastUpdate(DEVICE_DOES_NOT_SUPPORT_UART);
@@ -357,7 +350,10 @@ public class UartService extends Service {
      */
     public List<BluetoothGattService> getSupportedGattServices() {
         if (mBluetoothGatt == null) return null;
-
         return mBluetoothGatt.getServices();
+    }
+
+    public int getConnectionState(){
+        return mConnectionState;
     }
 }

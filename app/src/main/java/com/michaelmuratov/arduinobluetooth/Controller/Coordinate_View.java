@@ -1,4 +1,4 @@
-package com.michaelmuratov.arduinobluetooth;
+package com.michaelmuratov.arduinobluetooth.Controller;
 
 import android.content.Context;
 import android.graphics.Canvas;

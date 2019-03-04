@@ -1,4 +1,4 @@
-package com.michaelmuratov.arduinobluetooth;
+package com.michaelmuratov.arduinobluetooth.Util;
 
 import android.Manifest;
 import android.annotation.TargetApi;
@@ -12,14 +12,14 @@ import java.util.List;
 
 public class Permissions {
 
-    Activity activity;
+    private Activity activity;
 
-    Permissions(Activity activity){
+    public Permissions(Activity activity){
         this.activity = activity;
     }
 
     @TargetApi(Build.VERSION_CODES.M)
-    void askForLocation() {
+    public void askForLocation() {
         List<String> permissionsNeeded = new ArrayList<>();
         final List<String> permissionsList = new ArrayList<>();
         if (!addPermission(permissionsList, Manifest.permission.ACCESS_FINE_LOCATION))
@@ -45,7 +45,6 @@ public class Permissions {
             }
             activity.requestPermissions(permissionsList.toArray(new String[0]),
                     7);
-            return;
         }
     }
 

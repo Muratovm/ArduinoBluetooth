@@ -36,18 +36,20 @@ public class JoystickActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.coordinate_screen);
+        setContentView(R.layout.blank);
 
         Intent intent = getIntent();
         String deviceAddress = intent.getStringExtra("device address");
-        addJoystick();
         Log.d("ADDRESS",deviceAddress);
-        uartListener = new UARTListener(this);
+        uartListener = new UARTListener(this,this);
         uartListener.service_init(deviceAddress);
-
-
-
     }
+
+    public void setupController(){
+        setContentView(R.layout.coordinate_screen);
+        addJoystick();
+    }
+
 
     @SuppressLint("ClickableViewAccessibility")
     @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR2)

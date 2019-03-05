@@ -12,8 +12,10 @@ import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.michaelmuratov.arduinobluetooth.Controller.Coordinate_View;
 import com.michaelmuratov.arduinobluetooth.Controller.JoystickActivity;
 import com.michaelmuratov.arduinobluetooth.MainActivity;
+import com.michaelmuratov.arduinobluetooth.R;
 
 import java.io.UnsupportedEncodingException;
 import java.text.DateFormat;
@@ -29,8 +31,11 @@ public class UARTListener {
     private int mState = UART_PROFILE_DISCONNECTED;
 
     private Activity activity;
+    private JoystickActivity joystick;
     public UartService mService;
     private String  deviceAddress;
+
+    Coordinate_View view = null;
 
     //UART service connected/disconnected
     private ServiceConnection mServiceConnection = new ServiceConnection() {
@@ -55,7 +60,9 @@ public class UARTListener {
         }
     };
 
-    public UARTListener(Activity activity){
+    public UARTListener(JoystickActivity joystick,
+                        Activity activity){
+        this.joystick = joystick;
         this.activity = activity;
     }
 
@@ -90,6 +97,8 @@ public class UARTListener {
                             Log.d(TAG, "UART_CONNECT_MSG");
                             mState = UART_PROFILE_CONNECTED;
                             Toast.makeText(activity, "connected to the car", Toast.LENGTH_SHORT).show();
+                            joystick.setupController();
+                            view = activity.findViewById(R.id.drawing_screen);
                         }
                     });
                     break;
@@ -118,6 +127,14 @@ public class UARTListener {
                         public void run() {
                             try {
                                 String text = new String(txValue, "UTF-8");
+                                String number = text.substring(7);
+                                int value = Integer.valueOf(number);
+                                if(view != null){
+                                    if (value < 100) {
+                                        view.setFrontDistance(20, 20, value * 10, 20);
+                                        view.updateOverlay();
+                                    }
+                                }
                                 Log.d("OUTPUT",text);
                             } catch (Exception e) {
                                 Log.e(TAG, e.toString());

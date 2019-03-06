@@ -14,6 +14,7 @@ import android.widget.ImageView;
 import com.michaelmuratov.arduinobluetooth.MainActivity;
 import com.michaelmuratov.arduinobluetooth.R;
 import com.michaelmuratov.arduinobluetooth.UART.UARTListener;
+import com.michaelmuratov.arduinobluetooth.Util.Toolbox;
 
 public class JoystickActivity extends AppCompatActivity {
     public final int movingSpeed = 5;
@@ -109,12 +110,6 @@ public class JoystickActivity extends AppCompatActivity {
                 }
 
                 else if(event.getAction() == MotionEvent.ACTION_MOVE){
-                    int speedy = (425 - (int)event.getY()) * 200/425;
-                    int speedx = (425 - (int)event.getX()) * 200/425;
-                    uartListener.sendCommand("F"+speedy+"\0");
-                    uartListener.sendCommand("S"+speedx+"\0");
-                    Log.d("Y",""+speedy);
-                    Log.d("X",""+speedx);
                     float x = event.getX()- (circle.getWidth() >> 1);
                     float y = event.getY()- (circle.getHeight() >> 1);
                     double distance = Math.sqrt(Math.pow(x,2)+ (float) Math.pow(y,2));
@@ -141,11 +136,20 @@ public class JoystickActivity extends AppCompatActivity {
                     if (vDifference > 0)
                         vDifference = control.getY() + control.getHeight() - circle.getY() - (circle.getHeight() >> 1);
 
-                    view.setCentreControl(  cursorX+ (control.getWidth() >> 1),
-                            cursorY+ (control.getHeight() >> 1));
-                    view.setTouchCoordinates(event.getRawX(),
-                            event.getRawY()-control.getHeight());
+                    float control_center_X = cursorX+ (control.getWidth() >> 1);
+                    float control_center_Y = cursorY+ (control.getHeight() >> 1);
+
+                    view.setCentreControl(control_center_X, control_center_Y);
+                    view.setTouchCoordinates(event.getRawX(),event.getRawY());
                     view.updateOverlay();
+
+                    float vector_X = (circle.getX() + circle.getWidth()/2 - control.getWidth()/2 - cursorX) * 200/(circle.getWidth()/2);
+                    float vector_Y = (circle.getY() + circle.getHeight()/2 - control.getHeight()/2 - cursorY) * 200/(circle.getHeight()/2);
+                    uartListener.sendCommand("F"+vector_Y+"\0");
+                    uartListener.sendCommand("S"+vector_X+"\0");
+
+                    Log.d("X",""+vector_X);
+                    Log.d("Y",""+vector_Y);
                 }
                 return false;
             }
@@ -156,6 +160,12 @@ public class JoystickActivity extends AppCompatActivity {
     public void onDestroy(){
         super.onDestroy();
         uartListener.service_terminate();
+    }
+
+    @Override
+    public void onResume(){
+        super.onResume();
+        Toolbox.activiateFullscreen(this);
     }
 
 

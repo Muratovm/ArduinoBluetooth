@@ -73,6 +73,7 @@ public class MyAdapter extends RecyclerView.Adapter<MyAdapter.MyViewHolder> {
                 Intent intent = new Intent(activity,JoystickActivity.class);
                 intent.putExtra("device address", mDataset.get(holder.getAdapterPosition()).getAddress());
                 activity.startActivity(intent);
+                activity.finish();
             }
         });
     }

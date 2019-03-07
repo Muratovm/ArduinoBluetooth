@@ -5,11 +5,13 @@ import android.bluetooth.BluetoothAdapter;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.os.Bundle;
+import android.support.constraint.ConstraintLayout;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
+import com.michaelmuratov.arduinobluetooth.Controller.JoystickActivity;
 import com.michaelmuratov.arduinobluetooth.UART.DeviceScan;
 import com.michaelmuratov.arduinobluetooth.Util.Permissions;
 import com.michaelmuratov.arduinobluetooth.Util.Toolbox;
@@ -19,12 +21,12 @@ public class MainActivity extends Activity{
     private static final int REQUEST_ENABLE_BT = 2;
     private BluetoothAdapter mBtAdapter = null;
     DeviceScan scan;
-
+Activity activity;
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
-
+        this.activity = this;
         Permissions permissions = new Permissions(this);
         permissions.askForLocation();
 
@@ -35,6 +37,7 @@ public class MainActivity extends Activity{
             return;
         }
         Button btnConnectDisconnect = findViewById(R.id.btn_select);
+        ConstraintLayout blu_title = findViewById(R.id.bluetooth_titlebar);
         scan = new DeviceScan(this);
 
         // Handle Disconnect & Connect button
@@ -51,6 +54,17 @@ public class MainActivity extends Activity{
                 }
             }
 
+        });
+
+        blu_title.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                Intent intent = new Intent(activity, JoystickActivity.class);
+                intent.putExtra("device address", "");
+                startActivity(intent);
+                finish();
+            }
         });
         // Set initial UI state
 

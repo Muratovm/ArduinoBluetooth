@@ -9,7 +9,7 @@ import android.view.View;
 
 public class Coordinate_View extends View {
 
-    private float[] coordinates = new float[6];
+    private float[] coordinates = new float[10];
 
     private Paint paint = new Paint();
 
@@ -21,6 +21,12 @@ public class Coordinate_View extends View {
         coordinates[3] = 0;
         coordinates[4] = 0;
         coordinates[5] = 0;
+
+        coordinates[6] = 0;
+        coordinates[7] = 0;
+        coordinates[8] = 0;
+        coordinates[9] = 0;
+
         paint.setStrokeWidth(15);
     }
 
@@ -39,12 +45,23 @@ public class Coordinate_View extends View {
         coordinates[5] = y;
     }
 
+    public void setFrontDistance(float x1, float y1, float x2, float y2){
+        coordinates[6] = x1;
+        coordinates[7] = y1;
+        coordinates[8] = x2;
+        coordinates[9] = y2;
+    }
+
     public void updateOverlay(){
         invalidate();
     }
 
     @Override
     protected void onDraw (Canvas canvas) {
+            paint.setColor(Color.CYAN);
+            canvas.drawLine(coordinates[6], coordinates[7],
+                    coordinates[8], coordinates[9], paint);
+
             paint.setColor(Color.BLACK);
             canvas.drawLine(coordinates[0], coordinates[1],
                             coordinates[2], coordinates[3], paint);

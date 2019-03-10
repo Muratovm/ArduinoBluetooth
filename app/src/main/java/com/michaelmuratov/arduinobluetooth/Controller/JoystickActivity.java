@@ -59,6 +59,8 @@ public class JoystickActivity extends AppCompatActivity {
 
     JSONArray myArray;
 
+    String server_name = "http://142.1.200.140:10023/uploadData/";
+
     @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR2)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -269,7 +271,7 @@ public class JoystickActivity extends AppCompatActivity {
     private void save(JSONObject action) throws IOException {
         HttpURLConnection conn = null;
         try{
-            URL url = new URL("http://142.1.200.140:10023/uploadData/");
+            URL url = new URL(server_name);
             conn = (HttpURLConnection) url.openConnection();
             conn.setRequestMethod("POST");
             conn.setDoOutput(true);

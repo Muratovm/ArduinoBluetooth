@@ -1,5 +1,8 @@
 package com.michaelmuratov.arduinobluetooth.Server;
 
+import android.app.Activity;
+import android.widget.Toast;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -22,8 +25,9 @@ public class Sender {
 
     String server_name = "http://142.1.200.140:10023/uploadData/";
 
-
-    public Sender(){
+    Activity activity;
+    public Sender(Activity activity){
+        this.activity = activity;
         currentDateTime = System.currentTimeMillis();
         currentDate = new Date(currentDateTime);
         df = new SimpleDateFormat("dd:MM:yy:HH:mm:ss:SSSS");
@@ -57,7 +61,13 @@ public class Sender {
                 inputStreamData = inputStreamReader.read();
                 res += current;
             }
-
+            final String finalRes = res;
+            activity.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    Toast.makeText(activity, finalRes,Toast.LENGTH_SHORT).show();
+                }
+            });
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
@@ -67,11 +77,23 @@ public class Sender {
         }
     }
 
-    public JSONObject format_message(String message) throws JSONException {
+    public JSONObject format_message(String... values) throws JSONException {
         currentDateTime = System.currentTimeMillis();
         currentDate = new Date(currentDateTime);
         JSONObject action = new JSONObject();
-        action.put(df.format(currentDate),message);
+        JSONObject attributes = new JSONObject();
+        for(int i =0; i < values.length; i+=2) {
+            attributes.put(values[i], values[i + 1]);
+        }
+        action.put(df.format(currentDate),attributes);
+        return action;
+    }
+
+    public JSONObject single_format(String value) throws JSONException {
+        currentDateTime = System.currentTimeMillis();
+        currentDate = new Date(currentDateTime);
+        JSONObject action = new JSONObject();
+        action.put(df.format(currentDate),value);
         return action;
     }
 }

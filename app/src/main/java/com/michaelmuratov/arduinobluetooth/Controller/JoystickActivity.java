@@ -32,12 +32,15 @@ public class JoystickActivity extends AppCompatActivity {
 
 
 
-    final int STOP = -1;
-    final int CORRECT = 0;
+    final int STOP = 0;
+    final int CORRECT = 1;
     final int INCORRECT = 2;
     final int CORRECTING = 3;
 
     int state = STOP;
+
+    public int sensor_1 = 0;
+    public int sensor_2 = 0;
 
     UARTListener uartListener;
     int num = 0;
@@ -57,7 +60,7 @@ public class JoystickActivity extends AppCompatActivity {
         Intent intent = getIntent();
         String deviceAddress = intent.getStringExtra("device address");
         Log.d("ADDRESS",deviceAddress);
-        sender = new Sender();
+        sender = new Sender(this);
         if(!deviceAddress.equals("")){
             uartListener = new UARTListener(this,this);
             uartListener.service_init(deviceAddress);
@@ -74,14 +77,23 @@ public class JoystickActivity extends AppCompatActivity {
         setContentView(R.layout.coordinate_screen);
         addJoystick();
 
-        Button clear_all = findViewById(R.id.btnClearAll);
-        clear_all.setOnClickListener(new View.OnClickListener() {
+        Button finish_training = findViewById(R.id.btnClearAll);
+        finish_training.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 new Thread(new Runnable() {
                     public void run() {
                         myArray = new JSONArray();
                         num = 0;
+                        try {
+                            JSONObject object = sender.single_format("STOP");
+                            Log.d("SENDER",object.toString());
+                            sender.send(object);
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
                         runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
@@ -259,7 +271,11 @@ public class JoystickActivity extends AppCompatActivity {
                         public void run() {
                             JSONObject action = null;
                             try {
-                                action = sender.format_message("X "+vector_X+" Y "+vector_Y);
+                                action = sender.format_message(
+                                        "X",""+vector_X, "Y",""+vector_Y,
+                                        "Sensor1",""+sensor_1, "Sensor2",""+sensor_2,
+                                        "State",""+state);
+                                Log.d("JSON",action.toString());
                                 myArray.put(action);
                                 num++;
                                 runOnUiThread(new Runnable() {

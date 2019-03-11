@@ -127,10 +127,16 @@ public class UARTListener {
                         public void run() {
                             try {
                                 String text = new String(txValue, "UTF-8");
-                                String number = text.substring(7);
+                                String number = text.substring(2);
                                 int value = Integer.valueOf(number);
                                 if(view != null){
                                     if (value < 100) {
+                                        if(text.charAt(0) == 'F'){
+                                            joystick.sensor_1 = value;
+                                        }
+                                        else if(text.charAt(0) == 'S'){
+                                            joystick.sensor_2 = value;
+                                        }
                                         view.setFrontDistance(20, 20, value * 10, 20);
                                         view.updateOverlay();
                                     }

@@ -93,45 +93,12 @@
         android:background="@drawable/button"
         android:backgroundTint="@color/colorPrimaryRed"
         android:padding="5dp"
-        android:text="Clear Instructions"
+        android:text="Finished Training"
         android:textColor="@color/whitegrey"
         app:layout_constraintBottom_toBottomOf="@+id/imgHangtab2"
         app:layout_constraintEnd_toStartOf="@+id/guideline10"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/imgHangtab" />
-
-    <Button
-        android:id="@+id/btnToggleServer"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="16dp"
-        android:layout_marginEnd="8dp"
-        android:background="@drawable/button"
-        android:backgroundTint="@color/whitegrey"
-        android:padding="5dp"
-        android:text="Toggle Server"
-        android:textColor="@color/darkBlue"
-        app:layout_constraintEnd_toStartOf="@+id/guideline6"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/imgHangtab2" />
-
-    <Button
-        android:id="@+id/btnSensors"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:layout_marginEnd="8dp"
-        android:layout_marginBottom="8dp"
-        android:background="@drawable/button"
-        android:backgroundTint="@color/whitegrey"
-        android:padding="5dp"
-        android:text="Toggle Sensors"
-        android:textColor="@color/darkBlue"
-        app:layout_constraintBottom_toTopOf="@+id/imgPad"
-        app:layout_constraintEnd_toStartOf="@+id/guideline6"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/btnToggleServer" />
 
     <Switch
         android:id="@+id/swCorrectPath"
@@ -309,9 +276,14 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginBottom="8dp"
+        android:textSize="20dp"
         android:text="Number Recorded: 0"
         android:textColor="@color/whitegrey"
-        app:layout_constraintStart_toStartOf="@+id/guideline6"
+        app:layout_constraintBottom_toTopOf="@+id/guideline3"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="@+id/guideline8" />
 
 </android.support.constraint.ConstraintLayout>

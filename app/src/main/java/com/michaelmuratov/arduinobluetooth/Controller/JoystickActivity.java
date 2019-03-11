@@ -13,6 +13,7 @@ import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.ImageView;
 import android.widget.Switch;
+import android.widget.TextView;
 
 import com.michaelmuratov.arduinobluetooth.MainActivity;
 import com.michaelmuratov.arduinobluetooth.R;
@@ -43,6 +44,8 @@ public class JoystickActivity extends AppCompatActivity {
     JSONArray myArray;
     Sender sender;
 
+    TextView tvNum;
+
 
 
     @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR2)
@@ -64,6 +67,7 @@ public class JoystickActivity extends AppCompatActivity {
             sender.connected = false;
         }
         myArray = new JSONArray();
+        tvNum = findViewById(R.id.tvNum);
     }
 
     public void setupController(){
@@ -78,6 +82,12 @@ public class JoystickActivity extends AppCompatActivity {
                     public void run() {
                         myArray = new JSONArray();
                         num = 0;
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                tvNum.setText("Number Recorded: "+num);
+                            }
+                        });
                     }
                 }).start();
             }
@@ -97,6 +107,12 @@ public class JoystickActivity extends AppCompatActivity {
                             Log.d("NUM",""+num);
                             myArray = new JSONArray();
                             num = 0;
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    tvNum.setText("Number Recorded: "+num);
+                                }
+                            });
                         } catch (JSONException e) {
                             e.printStackTrace();
                         } catch (IOException e) {
@@ -246,6 +262,12 @@ public class JoystickActivity extends AppCompatActivity {
                                 action = sender.format_message("X "+vector_X+" Y "+vector_Y);
                                 myArray.put(action);
                                 num++;
+                                runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        tvNum.setText("Number Recorded: "+num);
+                                    }
+                                });
                             } catch (JSONException e) {
                                 e.printStackTrace();
                             }

@@ -61,7 +61,7 @@ public class Coordinate_View extends View {
             paint.setColor(Color.CYAN);
             canvas.drawLine(coordinates[6], coordinates[7],
                     coordinates[8], coordinates[9], paint);
-
+/*
             paint.setColor(Color.BLACK);
             canvas.drawLine(coordinates[0], coordinates[1],
                             coordinates[2], coordinates[3], paint);
@@ -75,7 +75,7 @@ public class Coordinate_View extends View {
             paint.setColor(Color.GREEN);
             canvas.drawLine(coordinates[4], coordinates[5],
                             coordinates[2], coordinates[3], paint);
-
+*/
         //Log.d("Drawing START","X: "+mCoordinates[0]+",Y: "+mCoordinates[1]);
         //Log.d("Drawing END","X: "+mCoordinates[2]+",Y: "+mCoordinates[3]);
     }

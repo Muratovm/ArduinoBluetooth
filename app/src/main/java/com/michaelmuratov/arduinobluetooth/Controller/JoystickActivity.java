@@ -68,14 +68,16 @@ public class JoystickActivity extends AppCompatActivity {
         else{
             setupController();
             sender.connected = false;
+            tvNum = findViewById(R.id.tvNum);
         }
         myArray = new JSONArray();
-        tvNum = findViewById(R.id.tvNum);
     }
 
     public void setupController(){
         setContentView(R.layout.coordinate_screen);
         addJoystick();
+
+        tvNum = findViewById(R.id.tvNum);
 
         Button finish_training = findViewById(R.id.btnClearAll);
         finish_training.setOnClickListener(new View.OnClickListener() {

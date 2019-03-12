@@ -33,14 +33,14 @@ public class Sender {
         df = new SimpleDateFormat("dd:MM:yy:HH:mm:ss:SSSS");
     }
 
-    public void send(JSONObject action) throws IOException {
+    public void send(String action_string) throws  IOException{
         HttpURLConnection conn = null;
         try{
             URL url = new URL(server_name);
             conn = (HttpURLConnection) url.openConnection();
             conn.setRequestMethod("POST");
             conn.setDoOutput(true);
-            String action_string = action.toString();
+
 
             action_string = action_string.replace("[","");
             action_string = action_string.replace("]","");
@@ -75,6 +75,11 @@ public class Sender {
                 conn.disconnect();
             }
         }
+    }
+
+    public void send(JSONObject action) throws IOException {
+        String action_string = action.toString();
+        send(action_string);
     }
 
     public JSONObject format_message(String... values) throws JSONException {

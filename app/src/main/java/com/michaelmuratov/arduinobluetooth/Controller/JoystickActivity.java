@@ -86,11 +86,8 @@ public class JoystickActivity extends AppCompatActivity {
                         myArray = new JSONArray();
                         num = 0;
                         try {
-                            JSONObject object = sender.single_format("STOP");
-                            Log.d("SENDER",object.toString());
-                            sender.send(object);
-                        } catch (JSONException e) {
-                            e.printStackTrace();
+                            Log.d("SENDER","STOP");
+                            sender.send("STOP");
                         } catch (IOException e) {
                             e.printStackTrace();
                         }

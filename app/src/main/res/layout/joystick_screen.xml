@@ -45,24 +45,24 @@
 
     <ImageView
         android:id="@+id/imgCircle"
-        android:layout_width="250dp"
-        android:layout_height="250dp"
-        app:layout_constraintBottom_toBottomOf="@+id/imgPad"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/guideline4"
         app:layout_constraintStart_toStartOf="@+id/guideline5"
         app:layout_constraintTop_toTopOf="@+id/imgPad"
-        app:srcCompat="@drawable/outer_circle" />
+        app:srcCompat="@drawable/circle" />
 
     <ImageView
         android:id="@+id/imgControl"
-        android:layout_width="120dp"
-        android:layout_height="120dp"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
         android:visibility="visible"
         app:layout_constraintBottom_toBottomOf="@+id/imgCircle"
         app:layout_constraintEnd_toStartOf="@+id/guideline7"
         app:layout_constraintStart_toStartOf="@+id/guideline6"
         app:layout_constraintTop_toTopOf="@+id/imgCircle"
-        app:srcCompat="@drawable/inner_circle" />
+        app:srcCompat="@drawable/circle2" />
 
     <Button
         android:id="@+id/btnSendAll"
@@ -73,9 +73,9 @@
         android:layout_marginEnd="8dp"
         android:layout_marginBottom="8dp"
         android:background="@drawable/button"
-        android:backgroundTint="@color/colorPrimary"
+        android:backgroundTint="@color/design_default_color_primary"
         android:padding="5dp"
-        android:text="Send instructions"
+        android:text="Send Instructions"
         android:textColor="@color/whitegrey"
         app:layout_constraintBottom_toBottomOf="@+id/imgHangtab2"
         app:layout_constraintEnd_toEndOf="parent"
@@ -91,9 +91,9 @@
         android:layout_marginEnd="8dp"
         android:layout_marginBottom="8dp"
         android:background="@drawable/button"
-        android:backgroundTint="@color/colorPrimaryRed"
+        android:backgroundTint="@color/colorPrimary"
         android:padding="5dp"
-        android:text="Finished Training"
+        android:text="Start Training"
         android:textColor="@color/whitegrey"
         app:layout_constraintBottom_toBottomOf="@+id/imgHangtab2"
         app:layout_constraintEnd_toStartOf="@+id/guideline10"
@@ -107,7 +107,7 @@
         android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
         android:layout_marginBottom="8dp"
-        android:checked="false"
+        android:checked="true"
         android:textColor="@color/whitegrey"
         app:layout_constraintBottom_toTopOf="@+id/guideline"
         app:layout_constraintStart_toStartOf="@+id/guideline2"
@@ -136,17 +136,6 @@
         app:layout_constraintBottom_toTopOf="@+id/guideline"
         app:layout_constraintStart_toStartOf="@+id/guideline4"
         app:layout_constraintTop_toTopOf="parent" />
-
-    <Switch
-        android:id="@+id/swStopRecording"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="8dp"
-        android:checked="true"
-        android:textColor="@color/whitegrey"
-        app:layout_constraintStart_toStartOf="@+id/guideline4"
-        app:layout_constraintTop_toTopOf="@+id/guideline" />
 
     <TextView
         android:id="@+id/tvCorrectPath"
@@ -177,17 +166,6 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
-        android:id="@+id/tvNotRecording"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:layout_marginEnd="8dp"
-        android:text="Stop Recording"
-        android:textColor="@color/whitegrey"
-        app:layout_constraintEnd_toStartOf="@+id/guideline4"
-        app:layout_constraintTop_toTopOf="@+id/guideline" />
-
-    <TextView
         android:id="@+id/tvIncorrectPath"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -212,7 +190,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        app:layout_constraintGuide_percent="0.5" />
+        app:layout_constraintGuide_begin="366dp" />
 
     <android.support.constraint.Guideline
         android:id="@+id/guideline8"
@@ -229,6 +207,13 @@
         app:layout_constraintGuide_percent="0.13" />
 
     <android.support.constraint.Guideline
+        android:id="@+id/guideline11"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.38" />
+
+    <android.support.constraint.Guideline
         android:id="@+id/guideline2"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -240,7 +225,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        app:layout_constraintGuide_percent="0.2" />
+        app:layout_constraintGuide_percent="0.15" />
 
     <android.support.constraint.Guideline
         android:id="@+id/guideline10"
@@ -268,7 +253,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        app:layout_constraintGuide_percent="0.8" />
+        app:layout_constraintGuide_percent="0.85" />
 
     <TextView
         android:id="@+id/tvNum"
@@ -276,14 +261,32 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
-        android:layout_marginEnd="8dp"
         android:layout_marginBottom="8dp"
-        android:textSize="20dp"
         android:text="Number Recorded: 0"
         android:textColor="@color/whitegrey"
+        android:textSize="20dp"
         app:layout_constraintBottom_toTopOf="@+id/guideline3"
-        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="@+id/guideline8" />
+
+    <TextView
+        android:id="@+id/tvX"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="24dp"
+        android:text="X:"
+        android:textColor="@color/whitegrey"
+        app:layout_constraintBottom_toTopOf="@+id/guideline11"
+        app:layout_constraintStart_toStartOf="@+id/guideline7" />
+
+    <TextView
+        android:id="@+id/tvY"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:text="Y:"
+        android:textColor="@color/whitegrey"
+        app:layout_constraintStart_toStartOf="@+id/guideline7"
+        app:layout_constraintTop_toTopOf="@+id/guideline11" />
 
 </android.support.constraint.ConstraintLayout>

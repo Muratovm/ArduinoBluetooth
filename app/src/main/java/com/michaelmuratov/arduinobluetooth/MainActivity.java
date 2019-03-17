@@ -21,7 +21,8 @@ public class MainActivity extends Activity{
     private static final int REQUEST_ENABLE_BT = 2;
     private BluetoothAdapter mBtAdapter = null;
     DeviceScan scan;
-Activity activity;
+    Activity activity;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

@@ -26,18 +26,17 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.util.Timer;
+import java.util.TimerTask;
 
 public class JoystickActivity extends AppCompatActivity {
     boolean down = true;
 
-
-
-    final int STOP = 0;
     final int CORRECT = 1;
     final int INCORRECT = 2;
     final int CORRECTING = 3;
 
-    int state = STOP;
+    int state = CORRECT;
 
     public int sensor_1 = 0;
     public int sensor_2 = 0;
@@ -48,6 +47,10 @@ public class JoystickActivity extends AppCompatActivity {
     Sender sender;
 
     TextView tvNum;
+    TextView tvX;
+    TextView tvY;
+
+    String start_stop = "STOP";
 
 
 
@@ -69,6 +72,8 @@ public class JoystickActivity extends AppCompatActivity {
             setupController();
             sender.connected = false;
             tvNum = findViewById(R.id.tvNum);
+            tvX = findViewById(R.id.tvX);
+            tvY = findViewById(R.id.tvY);
         }
         myArray = new JSONArray();
     }
@@ -79,7 +84,9 @@ public class JoystickActivity extends AppCompatActivity {
 
         tvNum = findViewById(R.id.tvNum);
 
-        Button finish_training = findViewById(R.id.btnClearAll);
+
+
+        final Button finish_training = findViewById(R.id.btnClearAll);
         finish_training.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -88,8 +95,34 @@ public class JoystickActivity extends AppCompatActivity {
                         myArray = new JSONArray();
                         num = 0;
                         try {
-                            Log.d("SENDER","STOP");
-                            sender.send("STOP");
+                            if(start_stop.equals("STOP")){
+                                Log.d("SENDER","START");
+                                sender.send("START");
+                                start_stop = "START";
+                                runOnUiThread(new Runnable() {
+                                    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
+                                    @Override
+                                    public void run() {
+
+                                        finish_training.setBackgroundTintList(getResources().getColorStateList(R.color.colorPrimaryRed));
+                                        finish_training.setText("Finish Training");
+                                    }
+                                });
+
+                            }
+                            else{
+                                Log.d("SENDER","STOP");
+                                sender.send("STOP");
+                                start_stop = "STOP";
+                                runOnUiThread(new Runnable() {
+                                    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
+                                    @Override
+                                    public void run() {
+                                        finish_training.setBackgroundTintList(getResources().getColorStateList(R.color.colorPrimary));
+                                        finish_training.setText("Start Training");
+                                    }
+                                });
+                            }
                         } catch (IOException e) {
                             e.printStackTrace();
                         }
@@ -134,10 +167,37 @@ public class JoystickActivity extends AppCompatActivity {
             }
         });
 
+        Timer myTimer = new Timer();
+        myTimer.scheduleAtFixedRate(new TimerTask() {
+            @Override
+            public void run() {
+                JSONObject object = new JSONObject();
+                try {
+                        object.put("actions", myArray);
+                        sender.send(object);
+                        Log.d("JSON", "sent all instructions");
+                        Log.d("NUM", "" + num);
+                        myArray = new JSONArray();
+                        num = 0;
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                tvNum.setText("Number Recorded: " + num);
+                            }
+                        });
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+
+        }, 0, 5000);
+
         final Switch correct = findViewById(R.id.swCorrectPath);
         final Switch incorrect = findViewById(R.id.swIncorrectPath);
         final Switch correcting = findViewById(R.id.swCorrectingPath);
-        final Switch stoprecord = findViewById(R.id.swStopRecording);
 
         correct.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
@@ -148,7 +208,6 @@ public class JoystickActivity extends AppCompatActivity {
                     state = CORRECT;
                     incorrect.setChecked(false);
                     correcting.setChecked(false);
-                    stoprecord.setChecked(false);
                 }
             }
         });
@@ -161,7 +220,6 @@ public class JoystickActivity extends AppCompatActivity {
                     state = INCORRECT;
                     correct.setChecked(false);
                     correcting.setChecked(false);
-                    stoprecord.setChecked(false);
                 }
             }
         });
@@ -174,23 +232,14 @@ public class JoystickActivity extends AppCompatActivity {
                     state = CORRECTING;
                     incorrect.setChecked(false);
                     correct.setChecked(false);
-                    stoprecord.setChecked(false);
                 }
             }
         });
-        stoprecord.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if(!isChecked){
-                    stoprecord.setChecked(false);
-                }
-                else {
-                    state = STOP;
-                    incorrect.setChecked(false);
-                    correcting.setChecked(false);
-                    correct.setChecked(false);
-                }
-            }
-        });
+        try {
+            sender.send("STOP");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     @SuppressLint("ClickableViewAccessibility")
@@ -240,10 +289,12 @@ public class JoystickActivity extends AppCompatActivity {
                     float y = event.getY()- (circle.getHeight() >> 1);
                     double distance = Math.sqrt(Math.pow(x,2)+ (float) Math.pow(y,2));
                     //Log.d("Distance",""+distance);
+                    double angle  = Math.atan2(x,y);
                     if (distance > circle.getWidth()/2){
-                        double angle  = Math.atan2(x,y);
+
                         cursorX = (float) ((circle.getWidth()/2)*Math.sin(angle));
                         cursorY = (float) ((circle.getHeight()/2)*Math.cos(angle));
+
                         cursorX+=circle.getX() + (circle.getWidth() >> 1) - (control.getWidth() >> 1);
                         cursorY+=circle.getY() + (circle.getHeight() >> 1) - (control.getHeight() >> 1);
                     }
@@ -258,20 +309,49 @@ public class JoystickActivity extends AppCompatActivity {
                     view.setTouchCoordinates(event.getRawX(),event.getRawY());
                     view.updateOverlay();
                        */
-                    final int vector_X = (int)(circle.getX() + circle.getWidth()/2 - control.getWidth()/2 - cursorX) * 255/(circle.getWidth()/2);
-                    final int vector_Y = (int)(circle.getY() + circle.getHeight()/2 - control.getHeight()/2 - cursorY) * 100/(circle.getHeight()/2);
-                    if(sender.connected) {
-                        uartListener.sendCommand("F" + vector_Y + "\0");
-                        uartListener.sendCommand("S" + vector_X + "\0");
+                    int vector_X = (int) (((circle.getWidth()/2)*Math.sin(angle)) * 255/(circle.getWidth()/2));
+                    int vector_Y = (int)((circle.getHeight()/2)*Math.cos(angle)) * 255/(circle.getHeight()/2);
+
+                    distance = (int) Math.sqrt(Math.pow(vector_Y, 2) + Math.pow(vector_X, 2));
+
+                    float dist = 0;
+
+                    if(Math.abs(vector_X) >= Math.abs(vector_Y)){
+                        if(vector_X != 0){
+                            dist = (float) Math.abs(vector_Y)/Math.abs(vector_X);
+                        }
                     }
-                    Log.d("X",""+vector_X);
-                    Log.d("Y",""+vector_Y);
+                    else{
+                        if(vector_Y != 0) {
+                            dist = (float) Math.abs(vector_X)/Math.abs(vector_Y);
+                        }
+                    }
+                    int final_distance = (int) (dist*distance);
+
+                    if(vector_X < 0){
+                        final_distance *= -1;
+                    }
+
+                    final int final_Y = vector_Y * 150/255;
+                    final int final_X = final_distance;
+
+                    Log.d("Y",""+final_Y);
+                    Log.d("X",""+final_X);
+
+                    tvX.setText("X: "+final_X);
+                    tvY.setText("Y: "+final_Y);
+
+                    if(sender.connected) {
+                        uartListener.sendCommand("F" + final_Y + "\0");
+                        uartListener.sendCommand("S" + final_X + "\0");
+                    }
+
                     new Thread(new Runnable() {
                         public void run() {
                             JSONObject action = null;
                             try {
                                 action = sender.format_message(
-                                        "X",""+vector_X, "Y",""+vector_Y,
+                                        "F",""+final_X, "S",""+final_Y,
                                         "Sensor1",""+sensor_1, "Sensor2",""+sensor_2,
                                         "State",""+state);
                                 Log.d("JSON",action.toString());

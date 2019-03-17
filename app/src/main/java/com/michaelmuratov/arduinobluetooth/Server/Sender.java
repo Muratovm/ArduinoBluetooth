@@ -3,6 +3,8 @@ package com.michaelmuratov.arduinobluetooth.Server;
 import android.app.Activity;
 import android.widget.Toast;
 
+import com.michaelmuratov.arduinobluetooth.Controller.JoystickActivity;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -14,7 +16,10 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
+import java.util.TooManyListenersException;
 
 public class Sender {
 
@@ -23,7 +28,13 @@ public class Sender {
     private Date currentDate;
     public boolean connected = true;
 
+        //309 server: 142.1.200.140
+        //home ip: 192.168.1.177
+        //uoft ip: 138.51.174.199
     String server_name = "http://142.1.200.140:10023/uploadData/";
+
+
+    public boolean send_flag = true;
 
     Activity activity;
     public Sender(Activity activity){
@@ -78,8 +89,19 @@ public class Sender {
     }
 
     public void send(JSONObject action) throws IOException {
-        String action_string = action.toString();
-        send(action_string);
+        try{
+            String action_string = action.toString();
+            send(action_string);
+        }
+        catch (Exception e){
+            send(action);
+            activity.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    Toast.makeText(activity,"CONCURRENCY", Toast.LENGTH_SHORT).show();
+                }
+            });
+        }
     }
 
     public JSONObject format_message(String... values) throws JSONException {

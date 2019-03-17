@@ -133,15 +133,17 @@ public class UARTListener {
                                     if (value < 100) {
                                         if(text.charAt(0) == 'F'){
                                             joystick.sensor_1 = value;
+                                            Log.d("value",""+value);
+                                            view.setFrontDistance(20, 20, value * 10, 20);
                                         }
-                                        else if(text.charAt(0) == 'S'){
+                                        else if(text.charAt(0) == 'S') {
                                             joystick.sensor_2 = value;
+                                            view.setSideDistance(20, 40, value * 10, 40);
                                         }
-                                        view.setFrontDistance(20, 20, value * 10, 20);
                                         view.updateOverlay();
                                     }
                                 }
-                                Log.d("OUTPUT",text);
+                                //Log.d("OUTPUT",text);
                             } catch (Exception e) {
                                 Log.e(TAG, e.toString());
                             }

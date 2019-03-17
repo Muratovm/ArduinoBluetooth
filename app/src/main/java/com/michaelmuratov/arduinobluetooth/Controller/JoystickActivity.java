@@ -309,8 +309,8 @@ public class JoystickActivity extends AppCompatActivity {
                     view.setTouchCoordinates(event.getRawX(),event.getRawY());
                     view.updateOverlay();
                        */
-                    int vector_X = (int) (((circle.getWidth()/2)*Math.sin(angle)) * 255/(circle.getWidth()/2));
-                    int vector_Y = (int)((circle.getHeight()/2)*Math.cos(angle)) * 255/(circle.getHeight()/2);
+                    final int vector_X = (int)(circle.getX() + circle.getWidth()/2 - control.getWidth()/2 - cursorX) * 255/(circle.getWidth()/2);
+                    final int vector_Y = (int)(circle.getY() + circle.getHeight()/2 - control.getHeight()/2 - cursorY) * 255/(circle.getHeight()/2);
 
                     distance = (int) Math.sqrt(Math.pow(vector_Y, 2) + Math.pow(vector_X, 2));
 

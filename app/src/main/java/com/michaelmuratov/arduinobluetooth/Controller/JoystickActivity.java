@@ -83,6 +83,8 @@ public class JoystickActivity extends AppCompatActivity {
         addJoystick();
 
         tvNum = findViewById(R.id.tvNum);
+        tvX = findViewById(R.id.tvX);
+        tvY = findViewById(R.id.tvY);
 
 
 

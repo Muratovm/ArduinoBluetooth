@@ -15,10 +15,10 @@ import android.widget.ImageView;
 import android.widget.Switch;
 import android.widget.TextView;
 
-import com.michaelmuratov.arduinobluetooth.MainActivity;
+import com.michaelmuratov.arduinobluetooth.Bluetooth.DeviceActivity;
 import com.michaelmuratov.arduinobluetooth.R;
 import com.michaelmuratov.arduinobluetooth.Server.Sender;
-import com.michaelmuratov.arduinobluetooth.UART.UARTListener;
+import com.michaelmuratov.arduinobluetooth.Bluetooth.UARTListener;
 import com.michaelmuratov.arduinobluetooth.Util.Toolbox;
 
 import org.json.JSONArray;
@@ -52,7 +52,7 @@ public class JoystickActivity extends AppCompatActivity {
 
     String start_stop = "STOP";
 
-
+    Timer myTimer;
 
     @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR2)
     @Override
@@ -169,7 +169,7 @@ public class JoystickActivity extends AppCompatActivity {
             }
         });
 
-        Timer myTimer = new Timer();
+        myTimer = new Timer();
         myTimer.scheduleAtFixedRate(new TimerTask() {
             @Override
             public void run() {
@@ -348,28 +348,24 @@ public class JoystickActivity extends AppCompatActivity {
                         uartListener.sendCommand("S" + final_X + "\0");
                     }
 
-                    new Thread(new Runnable() {
-                        public void run() {
-                            JSONObject action = null;
-                            try {
-                                action = sender.format_message(
-                                        "F",""+final_X, "S",""+final_Y,
-                                        "Sensor1",""+sensor_1, "Sensor2",""+sensor_2,
-                                        "State",""+state);
-                                Log.d("JSON",action.toString());
-                                myArray.put(action);
-                                num++;
-                                runOnUiThread(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        tvNum.setText("Number Recorded: "+num);
-                                    }
-                                });
-                            } catch (JSONException e) {
-                                e.printStackTrace();
+                    JSONObject action = null;
+                    try {
+                        action = sender.format_message(
+                                "F",""+final_X, "S",""+final_Y,
+                                "Sensor1",""+sensor_1, "Sensor2",""+sensor_2,
+                                "State",""+state);
+                        Log.d("JSON",action.toString());
+                        myArray.put(action);
+                        num++;
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                tvNum.setText("Number Recorded: "+num);
                             }
-                        }
-                    }).start();
+                        });
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
 
                 }
                 return false;
@@ -380,6 +376,9 @@ public class JoystickActivity extends AppCompatActivity {
     @Override
     public void onDestroy(){
         super.onDestroy();
+        if(myTimer != null){
+            myTimer.cancel();
+        }
         if(sender.connected) {
             uartListener.service_terminate();
         }
@@ -394,7 +393,7 @@ public class JoystickActivity extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
-        Intent intent = new Intent(this, MainActivity.class);
+        Intent intent = new Intent(this, DeviceActivity.class);
         startActivity(intent);
         finish();
     }

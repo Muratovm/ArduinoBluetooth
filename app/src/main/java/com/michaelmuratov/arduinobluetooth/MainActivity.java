@@ -1,119 +1,51 @@
 package com.michaelmuratov.arduinobluetooth;
 
 import android.app.Activity;
-import android.bluetooth.BluetoothAdapter;
 import android.content.Intent;
-import android.content.res.Configuration;
 import android.os.Bundle;
-import android.support.constraint.ConstraintLayout;
-import android.util.Log;
+import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Button;
-import android.widget.Toast;
 
+import com.michaelmuratov.arduinobluetooth.Bluetooth.DeviceActivity;
 import com.michaelmuratov.arduinobluetooth.Controller.JoystickActivity;
-import com.michaelmuratov.arduinobluetooth.UART.DeviceScan;
-import com.michaelmuratov.arduinobluetooth.Util.Permissions;
 import com.michaelmuratov.arduinobluetooth.Util.Toolbox;
+import com.michaelmuratov.arduinobluetooth.Video.CameraActivity;
 
-public class MainActivity extends Activity{
-    public static final String TAG = "nRFUART";
-    private static final int REQUEST_ENABLE_BT = 2;
-    private BluetoothAdapter mBtAdapter = null;
-    DeviceScan scan;
-    Activity activity;
+public class MainActivity extends AppCompatActivity {
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.main);
-        this.activity = this;
-        Permissions permissions = new Permissions(this);
-        permissions.askForLocation();
+        setContentView(R.layout.main_layout);
 
-        mBtAdapter = BluetoothAdapter.getDefaultAdapter();
-        if (mBtAdapter == null) {
-            Toast.makeText(this, "Bluetooth is not available", Toast.LENGTH_LONG).show();
-            finish();
-            return;
-        }
-        Button btnConnectDisconnect = findViewById(R.id.btn_select);
-        ConstraintLayout blu_title = findViewById(R.id.bluetooth_titlebar);
-        scan = new DeviceScan(this);
+        Button video = findViewById(R.id.btnvideo);
+        Button car = findViewById(R.id.btncar);
 
-        // Handle Disconnect & Connect button
-        btnConnectDisconnect.setOnClickListener(new View.OnClickListener() {
+        final Activity activity = this;
+
+        video.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View v) {
-
-                if(scan.mScanning){
-                    scan.scanLeDevice(false);
-                }
-                else {
-                    //Disconnect button pressed
-                    scan.scanLeDevice(true);
-                }
-            }
-
-        });
-
-        blu_title.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-
-                Intent intent = new Intent(activity, JoystickActivity.class);
-                intent.putExtra("device address", "");
+            public void onClick(View view) {
+                Intent intent = new Intent(activity, CameraActivity.class);
                 startActivity(intent);
                 finish();
             }
         });
-        // Set initial UI state
 
-    }
-
-    @Override
-    public void onDestroy() {
-    	 super.onDestroy();
-         scan.scanLeDevice(false);
-    }
-
-    @Override
-    public void onResume() {
-        super.onResume();
-        Toolbox.activiateFullscreen(this);
-        Log.d(TAG, "onResume");
-        if (!mBtAdapter.isEnabled()) {
-            Log.i(TAG, "onResume - BT not enabled yet");
-            Intent enableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-            startActivityForResult(enableIntent, REQUEST_ENABLE_BT);
-            finish();
-        }
-    }
-
-    @Override
-    public void onConfigurationChanged(Configuration newConfig) {
-        super.onConfigurationChanged(newConfig);
-    }
-
-
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        switch (requestCode) {
-        case REQUEST_ENABLE_BT:
-            // When the request to enable Bluetooth returns
-            if (resultCode == Activity.RESULT_OK) {
-                Toast.makeText(this, "Bluetooth has turned on ", Toast.LENGTH_SHORT).show();
-
-            } else {
-                // User did not enable Bluetooth or an error occurred
-                Log.d(TAG, "BT not enabled");
-                Toast.makeText(this, "Problem in BT Turning ON ", Toast.LENGTH_SHORT).show();
+        car.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(activity, DeviceActivity.class);
+                startActivity(intent);
                 finish();
             }
-            break;
-        default:
-            Log.e(TAG, "wrong request code");
-            break;
-        }
+        });
+    }
+
+    @Override
+    public void onResume(){
+        super.onResume();
+        Toolbox.activiateFullscreen(this);
     }
 }

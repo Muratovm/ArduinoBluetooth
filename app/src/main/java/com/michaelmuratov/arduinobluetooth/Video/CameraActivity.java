@@ -16,22 +16,63 @@
 
 package com.michaelmuratov.arduinobluetooth.Video;
 
+import android.Manifest;
 import android.app.Activity;
+import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 
+import com.michaelmuratov.arduinobluetooth.MainActivity;
 import com.michaelmuratov.arduinobluetooth.R;
 
 public class CameraActivity extends Activity {
+
+    Bundle saved;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_camera);
-        if (null == savedInstanceState) {
-            getFragmentManager().beginTransaction()
-                    .replace(R.id.container, Camera2VideoFragment.newInstance())
-                    .commit();
+
+        saved = savedInstanceState;
+
+        // Here, thisActivity is the current activity
+        if (ContextCompat.checkSelfPermission(this,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
         }
+        else{
+            if (null == savedInstanceState) {
+                getFragmentManager().beginTransaction()
+                        .replace(R.id.container, Camera2VideoFragment.newInstance())
+                        .commit();
+            }
+        }
+
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
+        switch (requestCode) {
+            case 1: {
+                if (null == saved) {
+                    getFragmentManager().beginTransaction()
+                            .replace(R.id.container, Camera2VideoFragment.newInstance())
+                            .commit();
+                }
+            }
+        }
+    }
+
+    @Override
+    public void onBackPressed(){
+        super.onBackPressed();
+        Intent intent = new Intent(this, MainActivity.class);
+        startActivity(intent);
+        finish();
     }
 
 }

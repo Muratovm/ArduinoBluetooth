@@ -1,4 +1,4 @@
-package com.michaelmuratov.arduinobluetooth.UART;
+package com.michaelmuratov.arduinobluetooth.Bluetooth;
 
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
@@ -12,7 +12,6 @@ import android.util.Log;
 import android.widget.Button;
 import android.widget.Toast;
 
-import com.michaelmuratov.arduinobluetooth.MyAdapter;
 import com.michaelmuratov.arduinobluetooth.R;
 
 import java.util.ArrayList;
@@ -63,7 +62,7 @@ public class DeviceScan {
         recyclerView.setAdapter(mAdapter);
         recyclerView.setLayoutManager(new LinearLayoutManager(activity));
 
-        scanLeDevice(true);
+        scanLeDevice(false);
     }
 
     private BluetoothAdapter.LeScanCallback mLeScanCallback =
@@ -119,4 +118,6 @@ public class DeviceScan {
             mAdapter.notifyDataSetChanged();
         }
     }
+
+
 }

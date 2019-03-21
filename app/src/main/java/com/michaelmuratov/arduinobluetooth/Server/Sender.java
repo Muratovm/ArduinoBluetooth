@@ -20,6 +20,10 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.TooManyListenersException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 public class Sender {
 
@@ -33,7 +37,7 @@ public class Sender {
         //uoft ip: 138.51.174.199
     String server_name = "http://142.1.200.140:10023/uploadData/";
 
-
+    Lock lock;
     public boolean send_flag = true;
 
     Activity activity;
@@ -42,6 +46,7 @@ public class Sender {
         currentDateTime = System.currentTimeMillis();
         currentDate = new Date(currentDateTime);
         df = new SimpleDateFormat("dd:MM:yy:HH:mm:ss:SSSS");
+        lock = new ReentrantLock();
     }
 
     public void send(String action_string) throws  IOException{
@@ -89,6 +94,7 @@ public class Sender {
     }
 
     public void send(JSONObject action) throws IOException {
+        lock.lock();
         try{
             String action_string = action.toString();
             send(action_string);
@@ -102,6 +108,7 @@ public class Sender {
                 }
             });
         }
+        lock.unlock();
     }
 
     public JSONObject format_message(String... values) throws JSONException {

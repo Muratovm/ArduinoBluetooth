@@ -1,4 +1,4 @@
-package com.michaelmuratov.arduinobluetooth;
+package com.michaelmuratov.arduinobluetooth.Bluetooth;
 
 import android.app.Activity;
 import android.bluetooth.BluetoothDevice;
@@ -13,6 +13,7 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.michaelmuratov.arduinobluetooth.Controller.JoystickActivity;
+import com.michaelmuratov.arduinobluetooth.R;
 
 import java.util.List;
 

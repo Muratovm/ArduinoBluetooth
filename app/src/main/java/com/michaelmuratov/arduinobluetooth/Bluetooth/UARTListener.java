@@ -1,4 +1,4 @@
-package com.michaelmuratov.arduinobluetooth.UART;
+package com.michaelmuratov.arduinobluetooth.Bluetooth;
 
 import android.app.Activity;
 import android.content.BroadcastReceiver;
@@ -14,12 +14,9 @@ import android.widget.Toast;
 
 import com.michaelmuratov.arduinobluetooth.Controller.Coordinate_View;
 import com.michaelmuratov.arduinobluetooth.Controller.JoystickActivity;
-import com.michaelmuratov.arduinobluetooth.MainActivity;
 import com.michaelmuratov.arduinobluetooth.R;
 
 import java.io.UnsupportedEncodingException;
-import java.text.DateFormat;
-import java.util.Date;
 
 public class UARTListener {
 
@@ -109,7 +106,7 @@ public class UARTListener {
                             mState = UART_PROFILE_DISCONNECTED;
                             mService.close();
                             Toast.makeText(activity, "disconnected from the car", Toast.LENGTH_SHORT).show();
-                            Intent intent = new Intent(activity, MainActivity.class);
+                            Intent intent = new Intent(activity, DeviceActivity.class);
                             activity.startActivity(intent);
                             activity.finish();
 
